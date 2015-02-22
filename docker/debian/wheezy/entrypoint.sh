@@ -63,7 +63,7 @@ for i; do (
 )
 done
 
-chmod -R o+w /target/
+chmod -R o+rw /target/
 
 if [ $DOCKER_DEBUILD_SIGN -eq 1 ]; then
 	if [ -n "${GPG_AGENT_INFO}" ]; then

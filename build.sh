@@ -2,8 +2,8 @@
 
 PACKAGE_LIST=(vitamtp-2.5.5 qcma-0.3.7)
 SUPPORTED_DISTROS=(fedora:21 opensuse:13.2 debian:wheezy debian:jessie ubuntu:trusty ubuntu:utopic)
-SOURCES_ONLY=0
-SIGN_SOURCES=0
+SOURCES_ONLY=1
+SIGN_SOURCES=1
 PACKAGE_REVISION=1
 PPA_NAMING=1
 GPG_PRIVKEY=~/.gnupg/secring.gpg
@@ -90,9 +90,9 @@ function prepare_package() {
 
         if [ $DISTRO == "ubuntu" ] && [ $PPA_NAMING -eq 1 ]; then
             VERSION_STR="-0ubuntu1~${DISTRO_VERSION}1~ppa${PACKAGE_REVISION}"
-            sed -i "s/${PACKAGE} (\(.*\)) unstable/${PACKAGE} (\1${VERSION_STR}) ${DISTRO_VERSION}/" ${PACKAGE}-${VERSION}/ChangeLog
+            sed --follow-symlinks -i "s/${PACKAGE} (\(.*\)) unstable/${PACKAGE} (\1${VERSION_STR}) ${DISTRO_VERSION}/" ${PACKAGE}-${VERSION}/ChangeLog
         else
-            sed -i "s/${PACKAGE} (\(.*\)) unstable/${PACKAGE} (\1) ${DISTRO_VERSION}/" ${PACKAGE}-${VERSION}/ChangeLog
+            sed --follow-symlinks -i "s/${PACKAGE} (\(.*\)) unstable/${PACKAGE} (\1) ${DISTRO_VERSION}/" ${PACKAGE}-${VERSION}/ChangeLog
         fi
     else
         if [ -f "${CURDIR}/sources/${PACKAGE}-${VERSION}.tar.gz" ]; then
