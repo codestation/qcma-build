@@ -79,8 +79,12 @@ function prepare_package() {
     pushd "${CURDIR}/.build/src" > /dev/null
 
     if [ $DISTRO == "debian" ] || [ $DISTRO == "ubuntu" ]; then
-        wget -c https://github.com/codestation/${PACKAGE}/archive/${VERSION_PATH}/${PACKAGE}-${VERSION}.tar.gz \
-            -O ${PACKAGE}_${VERSION}.orig.tar.gz
+        if [ -f "${CURDIR}/sources/${PACKAGE}-${VERSION}.tar.gz" ]; then
+            cp "${CURDIR}/sources/${PACKAGE}-${VERSION}.tar.gz" ${PACKAGE}_${VERSION}.orig.tar.gz
+        else
+            wget -c https://github.com/codestation/${PACKAGE}/archive/${VERSION_PATH}/${PACKAGE}-${VERSION}.tar.gz \
+                -O ${PACKAGE}_${VERSION}.orig.tar.gz
+        fi
 
         tar xf ${PACKAGE}_${VERSION}.orig.tar.gz
 
@@ -91,8 +95,12 @@ function prepare_package() {
             sed -i "s/${PACKAGE} (\(.*\)) unstable/${PACKAGE} (\1) ${DISTRO_VERSION}/" ${PACKAGE}-${VERSION}/ChangeLog
         fi
     else
-        wget -c https://github.com/codestation/${PACKAGE}/archive/${VERSION_PATH}/${PACKAGE}-${VERSION}.tar.gz \
-            -O SOURCES/${PACKAGE}-${VERSION}.tar.gz
+        if [ -f "${CURDIR}/sources/${PACKAGE}-${VERSION}.tar.gz" ]; then
+            cp "${CURDIR}/sources/${PACKAGE}-${VERSION}.tar.gz" SOURCES/${PACKAGE}-${VERSION}.tar.gz
+        else
+            wget -c https://github.com/codestation/${PACKAGE}/archive/${VERSION_PATH}/${PACKAGE}-${VERSION}.tar.gz \
+                -O SOURCES/${PACKAGE}-${VERSION}.tar.gz
+        fi
 
         tar xf SOURCES/$PACKAGE-${VERSION}.tar.gz --strip-components 2 \
             -C SPECS $PACKAGE-${VERSION}/rpmbuild/${PACKAGE}.spec
