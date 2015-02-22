@@ -2,8 +2,8 @@
 
 PACKAGE_LIST=(vitamtp-2.5.5 qcma-0.3.7)
 SUPPORTED_DISTROS=(fedora:21 opensuse:13.2 debian:wheezy debian:jessie ubuntu:trusty ubuntu:utopic)
-SOURCES_ONLY=1
-SIGN_SOURCES=1
+SOURCES_ONLY=0
+SIGN_SOURCES=0
 PACKAGE_REVISION=1
 PPA_NAMING=1
 GPG_PRIVKEY=~/.gnupg/secring.gpg
