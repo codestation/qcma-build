@@ -50,7 +50,7 @@ for i; do (
 		for desc in $(find /target -maxdepth 1 -name '*.dsc'); do
 			cp "${desc}" /target/output/
 		done
-		for debian in $(find /target -maxdepth 1 -name '*.debian.tar.gz'); do
+		for debian in $(find /target -maxdepth 1 -name '*.debian.tar.*'); do
 			cp "${debian}" /target/output/
 		done
 		for orig in $(find /target -maxdepth 1 -name '*.orig.tar.gz'); do
