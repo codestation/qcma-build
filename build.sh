@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PACKAGE_LIST=(vitamtp-2.5.5 qcma-0.3.7)
+PACKAGE_LIST=(vitamtp-2.5.5 qcma-0.3.8)
 SUPPORTED_DISTROS=(fedora:21 opensuse:13.2 debian:wheezy debian:jessie ubuntu:trusty ubuntu:utopic)
 SOURCES_ONLY=0
 SIGN_SOURCES=0
@@ -16,6 +16,7 @@ show_usage() {
     for distro in ${SUPPORTED_DISTROS[@]}; do
         echo -e $distro
     done
+    echo -e "all (make builds for all supported distros)"
 }
 
 if [ $# -lt 1 ]
@@ -35,8 +36,16 @@ for distro in ${SUPPORTED_DISTROS[@]}; do
 done
 
 if [ $DISTRO_FOUND -eq 0 ]; then
-   echo -e "Invalid distro/version combination: $1"
-   exit 1
+    if [ $1 == "all" ]; then
+        for distro in ${SUPPORTED_DISTROS[@]}; do
+            echo "Building $distro"
+            ./$0 $distro
+        done
+        exit 0
+    else
+        echo -e "Invalid distro/version combination: $1"
+        exit 1
+    fi
 fi
 
 DISTRO=${1%:*}
