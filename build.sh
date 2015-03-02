@@ -1,7 +1,7 @@
 #!/bin/bash
 
-PACKAGE_LIST=(vitamtp-2.5.5 qcma-0.3.8)
-SUPPORTED_DISTROS=(fedora:21 opensuse:13.2 debian:wheezy debian:jessie ubuntu:trusty ubuntu:utopic)
+PACKAGE_LIST=(vitamtp-2.5.6 qcma-0.3.9)
+SUPPORTED_DISTROS=(fedora:21 opensuse:13.2 debian:wheezy debian:jessie ubuntu:trusty ubuntu:utopic ubuntu:precise)
 SOURCES_ONLY=0
 SIGN_SOURCES=0
 PACKAGE_REVISION=1
@@ -103,6 +103,25 @@ function prepare_package() {
         else
             sed --follow-symlinks -i "s/${PACKAGE} (\(.*\)) unstable/${PACKAGE} (\1) ${DISTRO_VERSION}/" ${PACKAGE}-${VERSION}/ChangeLog
         fi
+
+        # force quilt to apply patches.
+        sed -i 's/native/quilt/' ${PACKAGE}-${VERSION}/debian/source/format
+
+        # apply global package patches
+        for global_patches in $(find "${CURDIR}/${PACKAGE}/patches" -maxdepth 1 -name '*.patch'); do
+            patch -p1 < "${global_patches}"
+        done
+
+        # apply distro-only patches
+        for distro_patches in $(find "${CURDIR}/${PACKAGE}/${DISTRO}/patches" -maxdepth 1 -name '*.patch'); do
+            patch -p1 < "${distro_patches}"
+        done
+
+        # apply patches for only distro:version
+        for versioned_patches in $(find "${CURDIR}/${PACKAGE}/${DISTRO}/${DISTRO_VERSION}/patches" -maxdepth 1 -name '*.patch'); do
+            patch -p1 < "${versioned_patches}"
+        done
+
     else
         if [ -f "${CURDIR}/sources/${PACKAGE}-${VERSION}.tar.gz" ]; then
             cp "${CURDIR}/sources/${PACKAGE}-${VERSION}.tar.gz" SOURCES/${PACKAGE}-${VERSION}.tar.gz
