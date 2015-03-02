@@ -108,19 +108,21 @@ function prepare_package() {
         sed -i 's/native/quilt/' ${PACKAGE}-${VERSION}/debian/source/format
 
         # apply global package patches
-        for global_patches in $(find "${CURDIR}/${PACKAGE}/patches" -maxdepth 1 -name '*.patch'); do
+        pushd ${PACKAGE}-${VERSION} > /dev/null
+        for global_patches in $(find "${CURDIR}/patches/${PACKAGE}" -maxdepth 1 -name '*.patch'); do
             patch -p1 < "${global_patches}"
         done
 
         # apply distro-only patches
-        for distro_patches in $(find "${CURDIR}/${PACKAGE}/${DISTRO}/patches" -maxdepth 1 -name '*.patch'); do
+        for distro_patches in $(find "${CURDIR}/patches/${PACKAGE}/${DISTRO}" -maxdepth 1 -name '*.patch'); do
             patch -p1 < "${distro_patches}"
         done
 
         # apply patches for only distro:version
-        for versioned_patches in $(find "${CURDIR}/${PACKAGE}/${DISTRO}/${DISTRO_VERSION}/patches" -maxdepth 1 -name '*.patch'); do
+        for versioned_patches in $(find "${CURDIR}/patches/${PACKAGE}/${DISTRO}/${DISTRO_VERSION}" -maxdepth 1 -name '*.patch'); do
             patch -p1 < "${versioned_patches}"
         done
+        popd > /dev/null
 
     else
         if [ -f "${CURDIR}/sources/${PACKAGE}-${VERSION}.tar.gz" ]; then
