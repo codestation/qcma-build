@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CONTAINERS=(fedora:21 opensuse:13.2 debian:wheezy debian:jessie ubuntu:trusty ubuntu:utopic ubuntu:precise)
+CONTAINERS=(fedora:21 opensuse:13.2 debian:wheezy debian:jessie ubuntu:trusty ubuntu:utopic ubuntu:precise ubuntu:vivid)
 
 CURDIR=$(dirname $(readlink -f $0))
 
