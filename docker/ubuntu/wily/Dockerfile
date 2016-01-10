@@ -1,4 +1,4 @@
-FROM ubuntu:vivid
+FROM ubuntu:wily
 MAINTAINER codestation404@gmail.com
 
 RUN apt-get update

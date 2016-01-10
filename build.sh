@@ -1,7 +1,7 @@
 #!/bin/bash
 
-PACKAGE_LIST=(vitamtp-2.5.6 qcma-0.3.9)
-SUPPORTED_DISTROS=(fedora:21 opensuse:13.2 debian:wheezy debian:jessie ubuntu:trusty ubuntu:utopic ubuntu:precise)
+PACKAGE_LIST=(vitamtp-2.5.7 qcma-0.3.10)
+SUPPORTED_DISTROS=(fedora:23 opensuse:13.2 debian:jessie ubuntu:trusty ubuntu:wily)
 SOURCES_ONLY=0
 SIGN_SOURCES=0
 PACKAGE_REVISION=1
@@ -54,7 +54,7 @@ DISTRO_VERSION=${1#*:}
 CACHE_DIR="${1/:/_}_cache"
 
 if [ $DISTRO == "fedora" ]; then
-    CACHE_VOLUME="/var/cache/yum"
+    CACHE_VOLUME="/var/cache/dnf"
     METHOD="rpmbuild"
 elif [ $DISTRO == "opensuse" ]; then
     CACHE_VOLUME="/var/cache/zypp"
@@ -104,25 +104,31 @@ function prepare_package() {
             sed --follow-symlinks -i "s/${PACKAGE} (\(.*\)) unstable/${PACKAGE} (\1) ${DISTRO_VERSION}/" ${PACKAGE}-${VERSION}/ChangeLog
         fi
 
-        # force quilt to apply patches.
-        sed -i 's/native/quilt/' ${PACKAGE}-${VERSION}/debian/source/format
+        # Force quilt for ubuntu packages
+        if [ $DISTRO == "ubuntu" ]; then
+            # force quilt to apply patches.
+            sed -i 's/native/quilt/' ${PACKAGE}-${VERSION}/debian/source/format
+        fi
 
-        # apply global package patches
-        pushd ${PACKAGE}-${VERSION} > /dev/null
-        for global_patches in $(find "${CURDIR}/patches/${PACKAGE}" -maxdepth 1 -name '*.patch'); do
-            patch -p1 < "${global_patches}"
-        done
+        # do not patch debian packages, stick to native
+        if [ $DISTRO != "debian" ]; then
+            # apply global package patches
+            pushd ${PACKAGE}-${VERSION} > /dev/null
+            for global_patches in $(find "${CURDIR}/patches/${PACKAGE}" -maxdepth 1 -name '*.patch'); do
+                patch -p1 < "${global_patches}"
+            done
 
-        # apply distro-only patches
-        for distro_patches in $(find "${CURDIR}/patches/${PACKAGE}/${DISTRO}" -maxdepth 1 -name '*.patch'); do
-            patch -p1 < "${distro_patches}"
-        done
+            # apply distro-only patches
+            for distro_patches in $(find "${CURDIR}/patches/${PACKAGE}/${DISTRO}" -maxdepth 1 -name '*.patch'); do
+                patch -p1 < "${distro_patches}"
+            done
 
-        # apply patches for only distro:version
-        for versioned_patches in $(find "${CURDIR}/patches/${PACKAGE}/${DISTRO}/${DISTRO_VERSION}" -maxdepth 1 -name '*.patch'); do
-            patch -p1 < "${versioned_patches}"
-        done
-        popd > /dev/null
+            # apply patches for only distro:version
+            for versioned_patches in $(find "${CURDIR}/patches/${PACKAGE}/${DISTRO}/${DISTRO_VERSION}" -maxdepth 1 -name '*.patch'); do
+                patch -p1 < "${versioned_patches}"
+            done
+            popd > /dev/null
+        fi
 
     else
         if [ -f "${CURDIR}/sources/${PACKAGE}-${VERSION}.tar.gz" ]; then
