@@ -1,13 +1,14 @@
-FROM fedora:21
+FROM fedora:23
 MAINTAINER codestation codestation404@gmail.com
 
-VOLUME ["/var/cache/yum"]
+VOLUME ["/var/cache/dnf"]
 
-RUN yum -y install --nogpgcheck http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-stable.noarch.rpm
-RUN yum -y update rpmfusion\*
-RUN yum -y groupinstall "Development Tools"
-RUN yum -y install fedora-packager yum-utils
-RUN sed -i 's/keepcache=0/keepcache=1/' /etc/yum.conf
+RUN rpm --import "http://rpmfusion.org/keys?action=AttachFile&do=get&target=RPM-GPG-KEY-rpmfusion-free-fedora-23"
+RUN dnf -y install http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-23.noarch.rpm
+RUN dnf -y update rpmfusion\*
+RUN dnf -y groupinstall "Development Tools"
+RUN dnf -y install fedora-packager dnf-plugins-core
+RUN echo 'keepcache=true' >> /etc/dnf/dnf.conf
 
 VOLUME ["/target"]
 

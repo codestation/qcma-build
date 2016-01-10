@@ -10,7 +10,7 @@ cd /root/rpmbuild
 
 for i; do (
 	# install deps
-	yum-builddep -y SPECS/${i}.spec
+	dnf builddep -y SPECS/${i}.spec
 	# build package
 	rpmbuild -bb SPECS/${i}.spec
 
@@ -20,7 +20,7 @@ for i; do (
 			# copy rpms outside docker container
 			cp RPMS/x86_64/${rpmname}.rpm /target/output/
 			# install rpms
-			yum -y install RPMS/x86_64/${rpmname}.rpm
+			dnf -y install RPMS/x86_64/${rpmname}.rpm
 		fi
 	done
 	chmod -R o+w /target/
