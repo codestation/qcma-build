@@ -79,9 +79,9 @@ pushd qcma-${QCMA_VERSION} > /dev/null
 lrelease qcma.pro
 qmake qcma.pro
 make -j2
-macdeployqt qcma.app
+macdeployqt gui/qcma.app
 
-cp -r qcma.app "${CURDIR}/build/Qcma.app"
+cp -r gui/qcma.app "${CURDIR}/build/Qcma.app"
 
 popd > /dev/null
 
