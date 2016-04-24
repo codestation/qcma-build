@@ -1,7 +1,7 @@
 #!/bin/bash
 
-PACKAGE_LIST=(vitamtp-2.5.7 qcma-0.3.10)
-SUPPORTED_DISTROS=(fedora:23 opensuse:13.2 debian:jessie ubuntu:trusty ubuntu:wily)
+PACKAGE_LIST=(vitamtp-2.5.8 qcma-0.3.12)
+SUPPORTED_DISTROS=(fedora:23 opensuse:13.2 debian:jessie ubuntu:trusty ubuntu:wily ubuntu:xenial)
 SOURCES_ONLY=0
 SIGN_SOURCES=0
 PACKAGE_REVISION=1
