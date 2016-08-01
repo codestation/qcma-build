@@ -2,31 +2,22 @@
 
 set -ex
 
-cd /target
-
-cp -r /target /root/rpmbuild
-chown -R root:root /root/rpmbuild
-cd /root/rpmbuild
+chown builder:builder /output
+su - builder -c "cp -r /sources/* $BUILDER_HOME"
 
 for i; do (
-	# install deps
-	dnf builddep -y SPECS/${i}.spec
-	# build package
-	rpmbuild -bb SPECS/${i}.spec
+  # install deps
+  dnf builddep -y $BUILDER_HOME/rpmbuild/SPECS/${i}.spec
+  # build package
+  su - builder -c "rpmbuild -bb $BUILDER_HOME/rpmbuild/SPECS/${i}.spec"
 
-	mkdir -p /target/output
-	for rpmname in $(rpm --specfile SPECS/${i}.spec); do
-		if [ -f RPMS/x86_64/${rpmname}.rpm ]; then
-			# copy rpms outside docker container
-			cp RPMS/x86_64/${rpmname}.rpm /target/output/
-			# install rpms
-			dnf -y install RPMS/x86_64/${rpmname}.rpm
-		fi
-	done
-	chmod -R o+w /target/
+  for rpmname in $(rpm --specfile $BUILDER_HOME/rpmbuild/SPECS/${i}.spec); do
+    if [ -f $BUILDER_HOME/rpmbuild/RPMS/x86_64/${rpmname}.rpm ]; then
+      # copy rpms outside docker container
+      su - builder -c "cp $BUILDER_HOME/rpmbuild/RPMS/x86_64/${rpmname}.rpm /output/"
+      # install rpms
+      dnf -y install $BUILDER_HOME/rpmbuild/RPMS/x86_64/${rpmname}.rpm
+    fi
+  done
 )
 done
-
-cd /root
-# remove build directory
-rm -rf /root/rpmbuild

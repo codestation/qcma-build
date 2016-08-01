@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PACKAGE_LIST=(vitamtp-2.5.8 qcma-0.3.12)
-SUPPORTED_DISTROS=(fedora:23 opensuse:13.2 debian:jessie ubuntu:trusty ubuntu:wily ubuntu:xenial)
+SUPPORTED_DISTROS=(fedora:24 opensuse:42.1 debian:jessie ubuntu:trusty ubuntu:xenial)
 SOURCES_ONLY=0
 SIGN_SOURCES=0
 PACKAGE_REVISION=1
@@ -85,11 +85,11 @@ function prepare_package() {
         VERSION_PATH="v${VERSION}"
     fi
 
-    pushd "${CURDIR}/.build/src" > /dev/null
+    pushd "${CURDIR}/sources" > /dev/null
 
     if [ $DISTRO == "debian" ] || [ $DISTRO == "ubuntu" ]; then
-        if [ -f "${CURDIR}/sources/${PACKAGE}-${VERSION}.tar.gz" ]; then
-            cp "${CURDIR}/sources/${PACKAGE}-${VERSION}.tar.gz" ${PACKAGE}_${VERSION}.orig.tar.gz
+        if [ -f "${CURDIR}/tarballs/${PACKAGE}-${VERSION}.tar.gz" ]; then
+            cp "${CURDIR}/tarballs/${PACKAGE}-${VERSION}.tar.gz" ${PACKAGE}_${VERSION}.orig.tar.gz
         else
             wget -c https://github.com/codestation/${PACKAGE}/archive/${VERSION_PATH}/${PACKAGE}-${VERSION}.tar.gz \
                 -O ${PACKAGE}_${VERSION}.orig.tar.gz
@@ -131,27 +131,26 @@ function prepare_package() {
         fi
 
     else
-        if [ -f "${CURDIR}/sources/${PACKAGE}-${VERSION}.tar.gz" ]; then
-            cp "${CURDIR}/sources/${PACKAGE}-${VERSION}.tar.gz" SOURCES/${PACKAGE}-${VERSION}.tar.gz
+        if [ -f "${CURDIR}/tarballs/${PACKAGE}-${VERSION}.tar.gz" ]; then
+            cp "${CURDIR}/tarballs/${PACKAGE}-${VERSION}.tar.gz" rpmbuild/SOURCES/${PACKAGE}-${VERSION}.tar.gz
         else
             wget -c https://github.com/codestation/${PACKAGE}/archive/${VERSION_PATH}/${PACKAGE}-${VERSION}.tar.gz \
-                -O SOURCES/${PACKAGE}-${VERSION}.tar.gz
+                -O rpmbuild/SOURCES/${PACKAGE}-${VERSION}.tar.gz
         fi
 
-        tar xf SOURCES/$PACKAGE-${VERSION}.tar.gz --strip-components 2 \
-            -C SPECS $PACKAGE-${VERSION}/rpmbuild/${PACKAGE}.spec
+        tar xf rpmbuild/SOURCES/$PACKAGE-${VERSION}.tar.gz --strip-components 2 \
+            -C rpmbuild/SPECS $PACKAGE-${VERSION}/rpmbuild/${PACKAGE}.spec
 
-        sed -i "s/%define _version.*/%define _version ${VERSION}/" SPECS/${PACKAGE}.spec
+        sed -i "s/%define _version.*/%define _version ${VERSION}/" rpmbuild/SPECS/${PACKAGE}.spec
     fi
     
     popd > /dev/null
 }
 
-rm -rf "${CURDIR}/.build/src"
-mkdir -p "${CURDIR}/.build/src"
+rm -rf "${CURDIR}/sources/*"
 
 if [ $DISTRO == "fedora" ] || [ $DISTRO == "opensuse" ]; then
-    mkdir -p "${CURDIR}"/.build/src/{BUILD,RPMS,SPECS,SRPMS,SOURCES}
+    mkdir -p "${CURDIR}"/sources/rpmbuild/{BUILD,RPMS,SPECS,SRPMS,SOURCES}
 fi
 
 for package in ${PACKAGE_LIST[@]}; do
@@ -161,16 +160,13 @@ for package in ${PACKAGE_LIST[@]}; do
 done
 
 if [ $SIGN_SOURCES -eq 1 ]; then
-    cp "${GPG_PRIVKEY}" "${CURDIR}/.build/src/secring.gpg"
-    cp "${GPG_PUBKEY}" "${CURDIR}/.build/src/pubring.gpg"
+    cp "${GPG_PRIVKEY}" "${CURDIR}/sources/secring.gpg"
+    cp "${GPG_PUBKEY}" "${CURDIR}/sources/pubring.gpg"
 fi
 
-mkdir -p "${CURDIR}/${CACHE_DIR}"
-
-docker run -v "${CURDIR}/.build/src":/target -v "${CURDIR}/${CACHE_DIR}":${CACHE_VOLUME} \
-    -e DOCKER_SOURCE_ONLY=${SOURCES_ONLY} -e DOCKER_DEBUILD_SIGN=${SIGN_SOURCES} \
+docker run --rm -v "${CACHE_DIR}":${CACHE_VOLUME} \
+    -v "${CURDIR}/${DISTRO}_${DISTRO_VERSION}_output":/output \
+    -v ${CURDIR}/sources:/sources \
+    -e DOCKER_SOURCE_ONLY=${SOURCES_ONLY} \
+    -e DOCKER_DEBUILD_SIGN=${SIGN_SOURCES} \
     -it code/${METHOD}-${DISTRO}:${DISTRO_VERSION} ${PACKAGE_NAMES[@]}
-
-rm -rf "${CURDIR}/${DISTRO}_${DISTRO_VERSION}_output"
-cp -r "${CURDIR}/.build/src/output" "${CURDIR}/${DISTRO}_${DISTRO_VERSION}_output"
-rm -rf "${CURDIR}/.build"
