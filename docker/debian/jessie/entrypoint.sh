@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 set -ex
 
-cp -r /sources/* $BUILDER_HOME
+su - builder -c "cp -r /sources/* $BUILDER_HOME"
 
 DEBUILD_OPTS="--lintian-opts --allow-root"
 
@@ -24,9 +24,8 @@ else
 	DEBUILD_OPTS="-us -uc ${DEBUILD_OPTS}"
 fi
 
-for i; do (
-	set -e
-	cd "$i"
+for i; do
+	pushd "$i"
 
 	if [ $DOCKER_SOURCE_ONLY -eq 1 ]; then
 	        su - builder -c mkdir -p debian/patches
@@ -35,7 +34,7 @@ for i; do (
 		mk-build-deps --install --remove --tool "apt-get --no-install-recommends --yes"
 	fi
 
-	su - builder -c eval "debuild $DOCKER_DEBUILD_OPTS $DEBUILD_OPTS"
+	su - builder -c "cd $i && debuild $DOCKER_DEBUILD_OPTS $DEBUILD_OPTS"
 
 	if [ $DOCKER_SOURCE_ONLY -eq 1 ]; then
 		for changes in $(find /sources -maxdepth 1 -name '*.changes'); do
@@ -51,10 +50,12 @@ for i; do (
 			su - builder -c cp "${orig}" /output/
 		done
 	else
-		dpkg -i /sources/*.deb
-		su - builder -c mv /sources/*.deb /output/
+		dpkg -i $BUILDER_HOME/*.deb
+		mv $BUILDER_HOME/*.deb /output/
+		chown builder:builder /output/*.deb
 	fi
-)
+
+	popd
 done
 
 if [ $DOCKER_DEBUILD_SIGN -eq 1 ]; then

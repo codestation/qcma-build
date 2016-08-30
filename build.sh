@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PACKAGE_LIST=(vitamtp-2.5.8 qcma-0.3.12)
+PACKAGE_LIST=(vitamtp-2.5.9 qcma-0.3.12)
 SUPPORTED_DISTROS=(fedora:24 opensuse:42.1 debian:jessie ubuntu:trusty ubuntu:xenial)
 SOURCES_ONLY=0
 SIGN_SOURCES=0
@@ -164,7 +164,7 @@ if [ $SIGN_SOURCES -eq 1 ]; then
     cp "${GPG_PUBKEY}" "${CURDIR}/sources/pubring.gpg"
 fi
 
-docker run --rm -v "${CACHE_DIR}":${CACHE_VOLUME} \
+docker run --rm -it -v "${CACHE_DIR}":${CACHE_VOLUME} \
     -v "${CURDIR}/${DISTRO}_${DISTRO_VERSION}_output":/output \
     -v ${CURDIR}/sources:/sources \
     -e DOCKER_SOURCE_ONLY=${SOURCES_ONLY} \

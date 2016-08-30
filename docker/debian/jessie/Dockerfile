@@ -5,6 +5,7 @@ RUN apt-get update
 RUN apt-get --no-install-recommends --yes install build-essential fakeroot devscripts equivs
 RUN apt-get --no-install-recommends --yes install pinentry-curses gnupg-agent
 RUN rm -f /etc/apt/apt.conf.d/docker-clean
+RUN echo "Dir::State::Lists \"/var/cache/apt\";" > /etc/apt/apt.conf.d/99custom
 
 VOLUME ["/var/cache/apt"]
 VOLUME ["/sources"]

@@ -1,7 +1,6 @@
 FROM opensuse:42.1
 MAINTAINER codestation codestation404@gmail.com
 
-RUN zypper ar -f -n packman http://ftp.gwdg.de/pub/linux/misc/packman/suse/openSUSE_Leap_42.1/ packman
 RUN zypper --gpg-auto-import-keys -n install gcc gcc-c++ rpm-build
 RUN zypper modifyrepo -k --all
 
